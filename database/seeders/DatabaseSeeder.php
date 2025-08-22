@@ -8,6 +8,10 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        // Seed the demo workflow
         $this->call(DemoWorkflowSeeder::class);
+
+        // Seed a demo HTTP action (Slack / API call example)
+        $this->call(DemoHttpActionSeeder::class);
     }
 }
