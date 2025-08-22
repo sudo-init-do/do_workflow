@@ -6,11 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Jobs\ExecuteWorkflowAction;
 use App\Models\Workflow;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
+use Symfony\Component\HttpFoundation\Response;
 
 class TriggerController extends Controller
 {
-    // Trigger with secret (no auth)
     public function triggerBySecret(Request $request, string $secret)
     {
         $workflow = Workflow::where('trigger_secret', $secret)->firstOrFail();
@@ -22,7 +21,6 @@ class TriggerController extends Controller
         ], Response::HTTP_ACCEPTED);
     }
 
-    // Optional: Sanctum-protected trigger
     public function triggerAuth(Request $request, Workflow $workflow)
     {
         ExecuteWorkflowAction::dispatch($workflow->id, $request->all());
