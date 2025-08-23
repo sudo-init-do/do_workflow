@@ -13,5 +13,7 @@ class DatabaseSeeder extends Seeder
 
         // Seed a demo HTTP action (Slack / API call example)
         $this->call(DemoHttpActionSeeder::class);
+
+        $this->call(DemoChainedActionsSeeder::class);
     }
 }
