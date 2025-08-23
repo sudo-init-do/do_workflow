@@ -4,10 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class WorkflowRun extends Model
 {
-    /** @var string[] */
     public const STATUS_PENDING   = 'pending';
     public const STATUS_RUNNING   = 'running';
     public const STATUS_SUCCEEDED = 'succeeded';
@@ -34,13 +34,18 @@ class WorkflowRun extends Model
         'updated_at'      => 'datetime',
     ];
 
-    // ------------ Relationships ------------
+    // Relationships
     public function workflow(): BelongsTo
     {
         return $this->belongsTo(Workflow::class);
     }
 
-    // ------------ Accessors ------------
+    public function workflowActionRuns(): HasMany
+    {
+        return $this->hasMany(WorkflowActionRun::class, 'workflow_run_id');
+    }
+
+    // Accessors
     public function getDurationSecondsAttribute(): ?int
     {
         if (! $this->started_at || ! $this->finished_at) {
@@ -49,7 +54,7 @@ class WorkflowRun extends Model
         return $this->started_at->diffInSeconds($this->finished_at);
     }
 
-    // ------------ Scopes ------------
+    // Scopes
     public function scopeRecent($query, int $limit = 20)
     {
         return $query->latest('id')->limit($limit);
@@ -70,7 +75,7 @@ class WorkflowRun extends Model
         return $query->where('status', self::STATUS_FAILED);
     }
 
-    // ------------ State helpers ------------
+    // State helpers
     public function markStarted(): void
     {
         $this->status     = self::STATUS_RUNNING;
@@ -81,8 +86,8 @@ class WorkflowRun extends Model
     /** @param array|null $result */
     public function markSucceeded(?array $result = null): void
     {
-        $this->status       = self::STATUS_SUCCEEDED;
-        $this->finished_at  = now();
+        $this->status      = self::STATUS_SUCCEEDED;
+        $this->finished_at = now();
         if (! is_null($result)) {
             $this->result = $result;
         }
@@ -94,7 +99,9 @@ class WorkflowRun extends Model
     {
         $this->status      = self::STATUS_FAILED;
         $this->finished_at = now();
-        $this->error       = is_string($error) ? $error : ($error->getMessage().' @ '.$error->getFile().':'.$error->getLine());
+        $this->error       = is_string($error)
+            ? $error
+            : ($error->getMessage().' @ '.$error->getFile().':'.$error->getLine());
         $this->save();
     }
 }
